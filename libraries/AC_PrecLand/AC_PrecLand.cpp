@@ -21,14 +21,14 @@ extern const AP_HAL::HAL& hal;
 #if APM_BUILD_TYPE(APM_BUILD_Rover)
  # define AC_PRECLAND_ORIENT_DEFAULT Rotation::ROTATION_NONE
 #else
- # define AC_PRECLAND_ORIENT_DEFAULT Rotation::ROTATION_PITCH_270
+ # define AC_PRECLAND_ORIENT_DEFAULT Rotation::ROTATION_NONE
 #endif
 
 static const uint32_t EKF_INIT_TIME_MS = 2000; // EKF initialisation requires this many milliseconds of good sensor data
 static const uint32_t EKF_INIT_SENSOR_MIN_UPDATE_MS = 500; // Sensor must update within this many ms during EKF init, else init will fail
 static const uint32_t LANDING_TARGET_TIMEOUT_MS = 2000; // Sensor must update within this many ms, else prec landing will be switched off
 static const uint32_t LANDING_TARGET_LOST_TIMEOUT_MS = 180000; // Target will be considered as "lost" if the last known location of the target is more than this many ms ago
-static const float    LANDING_TARGET_LOST_DIST_THRESH_M  = 30; // If the last known location of the landing target is beyond this many meters, then we will consider it lost
+static const float    LANDING_TARGET_LOST_DIST_THRESH_M  = 3000; // If the last known location of the landing target is beyond this many meters, then we will consider it lost
 
 const AP_Param::GroupInfo AC_PrecLand::var_info[] = {
     // @Param: ENABLED
@@ -188,7 +188,11 @@ const AP_Param::GroupInfo AC_PrecLand::var_info[] = {
     // @Values: 0:Forward, 4:Back, 25:Down
     // @User: Advanced
     // @RebootRequired: True
-    AP_GROUPINFO_FRAME("ORIENT", 18, AC_PrecLand, _orient, AC_PRECLAND_ORIENT_DEFAULT, AP_PARAM_FRAME_ROVER),
+    #if APM_BUILD_TYPE(APM_BUILD_Rover)
+        AP_GROUPINFO_FRAME("ORIENT", 18, AC_PrecLand, _orient, AC_PRECLAND_ORIENT_DEFAULT, AP_PARAM_FRAME_ROVER),
+    #elif APM_BUILD_TYPE(APM_BUILD_Copter)
+        AP_GROUPINFO_FRAME("ORIENT", 18, AC_PrecLand, _orient, AC_PRECLAND_ORIENT_DEFAULT, AP_PARAM_FRAME_COPTER),    
+    #endif
 
     AP_GROUPEND
 };
